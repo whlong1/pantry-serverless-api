@@ -1,11 +1,16 @@
-import jwt from "jsonwebtoken";
-
-// Serverless Reference
-// https://github.com/tmaximini/serverless-jwt-authorizer/blob/master/functions/authorize.js
-
-// Original
+// Express API Original
 // https://github.com/whlong1/hoot-api/blob/main/middleware/auth.js
 
+// Serverless guide:
+// https://dev.to/tmaximini/jwt-authorization-for-serverless-apis-on-aws-lambda-31h9
+
+// Serverless docs:
+// https://www.serverless.com/framework/docs/providers/aws/events/apigateway#http-endpoints-with-custom-authorizers
+
+// HTTP API Custom Authorizer Issue:
+// https://github.com/dherault/serverless-offline/issues/1624
+
+import jwt from "jsonwebtoken";
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 const generateAuthResponse = (principalId, effect, methodArn) => {
@@ -15,7 +20,7 @@ const generateAuthResponse = (principalId, effect, methodArn) => {
     principalId,
     policyDocument
   };
-}
+};
 
 const generatePolicyDocument = (effect, methodArn) => {
   if (!effect || !methodArn) return null;
@@ -31,10 +36,9 @@ const generatePolicyDocument = (effect, methodArn) => {
     ]
   };
   return policyDocument;
-}
+};
 
 const verifyToken = (event, context, callback) => {
-  console.log("EVENT", event)
   const methodArn = event.methodArn
   const token = event.authorizationToken.replace("Bearer ", "");
   if (!token || !methodArn) return callback(null, "Unauthorized");
@@ -47,4 +51,4 @@ const verifyToken = (event, context, callback) => {
   }
 };
 
-export default verifyToken
+export default verifyToken;

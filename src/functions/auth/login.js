@@ -5,6 +5,11 @@ import jwt from "jsonwebtoken";
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
+const headers = {
+  "Content-Type": "application/json",
+  "Access-Control-Allow-Origin": "*",
+};
+
 const login = async (event) => {
   try {
     const { email, password } = JSON.parse(event.body);
@@ -14,7 +19,7 @@ const login = async (event) => {
     if (!user) {
       return {
         statusCode: 401,
-        headers: { "Content-Type": "application/json" },
+        headers: headers,
         body: JSON.stringify({ message: "User not found" })
       };
     }
@@ -23,7 +28,7 @@ const login = async (event) => {
     if (!passwordIsValid) {
       return {
         statusCode: 401,
-        headers: { "Content-Type": "application/json" },
+        headers: headers,
         body: JSON.stringify({ message: "Incorrect password!" })
       };
     }
@@ -32,7 +37,7 @@ const login = async (event) => {
 
     return {
       statusCode: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: headers,
       body: JSON.stringify({
         id: user.id,
         email: user.email,
@@ -44,6 +49,7 @@ const login = async (event) => {
     console.error("Login error:", error);
     return {
       statusCode: 500,
+      headers: headers,
       body: JSON.stringify({ message: "Login error." })
     };
   }

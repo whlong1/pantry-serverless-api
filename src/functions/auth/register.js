@@ -1,3 +1,6 @@
+// MERN Stack original:
+// https://github.com/whlong1/hoot-api/blob/main/controllers/auth.js
+
 import AWS from "aws-sdk";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -6,8 +9,10 @@ import { v4 as uuidv4 } from "uuid";
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
-// MERN Stack original:
-// https://github.com/whlong1/hoot-api/blob/main/controllers/auth.js
+const headers = {
+  "Content-Type": "application/json",
+  "Access-Control-Allow-Origin": "*",
+};
 
 const register = async (event) => {
   try {
@@ -21,7 +26,7 @@ const register = async (event) => {
     if (existingUser) {
       return {
         statusCode: 409,
-        headers: { "Content-Type": "application/json" },
+        headers: headers,
         body: JSON.stringify({ message: "Account already exists!" })
       };
     }
@@ -35,11 +40,11 @@ const register = async (event) => {
 
     await dynamodb.put({ TableName: "UserTable", Item: newUser }).promise();
 
-    const token = createJWT({ id, email })
+    const token = createJWT({ id, email });
 
     return {
       statusCode: 201,
-      headers: { "Content-Type": "application/json" },
+      headers: headers,
       body: JSON.stringify({
         id: newUser.id,
         email: newUser.email,
@@ -51,6 +56,7 @@ const register = async (event) => {
     console.error("Registration error:", error);
     return {
       statusCode: 500,
+      headers: headers,
       body: JSON.stringify({ message: "Problem with registration." })
     };
   }
