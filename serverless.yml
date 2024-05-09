@@ -1,0 +1,103 @@
+org: hunterlong
+app: pantry
+service: pantry
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  environment:
+    JWT_SECRET_KEY: ${param:JWT_SECRET_KEY} 
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Scan
+        - dynamodb:Query
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: ${param:TODO_TABLE_ARN}
+
+functions:
+  register:
+    handler: src/functions/users/register.default
+    events:
+      - httpApi:
+          path: /register
+          method: post
+  login:
+    handler: src/functions/users/login.default
+    events:
+      - httpApi:
+          path: /login
+          method: post
+  addTodo:
+    handler: src/functions/todos/addTodo.default
+    events:
+      - httpApi:
+          path: /todos
+          method: post
+  getTodos:
+    handler: src/functions/todos/getTodos.default
+    events:
+      - httpApi:
+          path: /todos
+          method: get
+  getTodoById:
+    handler: src/functions/todos/getTodoById.default
+    events:
+      - httpApi:
+          path: /todos/{id}
+          method: get
+  updateTodo:
+    handler: src/functions/todos/updateTodo.default
+    events:
+      - httpApi:
+          path: /todos/{id}
+          method: put
+  deleteTodo:
+    handler: src/functions/todos/deleteTodo.default
+    events:
+      - httpApi:
+          path: /todos/{id}
+          method: delete
+
+resources: 
+  Resources:
+    TodoTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: TodoTable
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+    UserTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: UserTable
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: EmailIndex
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+
+
+# Reference on GlobalSecondaryIndexes:
+# https://stackoverflow.com/questions/57322645/how-to-define-dynamodb-table-with-global-secondary-index-in-serverless-framework
