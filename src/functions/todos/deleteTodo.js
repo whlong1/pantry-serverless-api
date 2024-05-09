@@ -1,14 +1,10 @@
 import AWS from "aws-sdk";
 
 const deleteTodo = async (event) => {
-  console.log("I RAAAAAAAAAAN============")
-  console.log("delete event",event)
-  
   const dynamodb = new AWS.DynamoDB.DocumentClient();
   const { id } = event.pathParameters;
 
   try {
-
     await dynamodb.delete({
       TableName: "TodoTable",
       Key: { id: id }

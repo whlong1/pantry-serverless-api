@@ -8,7 +8,7 @@ provider:
   runtime: nodejs18.x
   region: us-east-1
   environment:
-    JWT_SECRET_KEY: ${param:JWT_SECRET_KEY} 
+    JWT_SECRET_KEY: ${param:JWT_SECRET_KEY}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -22,65 +22,54 @@ provider:
         - ${param:TODO_TABLE_ARN}
         - ${param:USER_TABLE_ARN}
         - ${param:USER_TABLE_ARN}/index/*
-  httpApi:
-    authorizers:
-      myAuthorizer:
-        type: request
-        functionName: myAuthorizer
-        enableSimpleResponses: true
 
 functions:
+  jwtAuthorizer:
+    handler: src/functions/auth/jwtAuthorizer.default
   register:
     handler: src/functions/auth/register.default
     events:
-      - httpApi:
-          path: /register
+      - http:
+          path: register
           method: post
   login:
     handler: src/functions/auth/login.default
     events:
-      - httpApi:
-          path: /login
+      - http:
+          path: login
           method: post
+  deleteTodo:
+    handler: src/functions/todos/deleteTodo.default
+    events:
+      - http:
+          path: /todos/{id}
+          method: delete
+          authorizer:
+            name: jwtAuthorizer
   addTodo:
     handler: src/functions/todos/addTodo.default
     events:
-      - httpApi:
+      - http:
           path: /todos
           method: post
   getTodos:
     handler: src/functions/todos/getTodos.default
     events:
-      - httpApi:
+      - http:
           path: /todos
           method: get
   getTodoById:
     handler: src/functions/todos/getTodoById.default
     events:
-      - httpApi:
+      - http:
           path: /todos/{id}
           method: get
   updateTodo:
     handler: src/functions/todos/updateTodo.default
     events:
-      - httpApi:
+      - http:
           path: /todos/{id}
           method: put
-  deleteTodo:
-    handler: src/functions/todos/deleteTodo.default
-    events:
-      - httpApi:
-          path: /todos/{id}
-          method: delete
-          authorizer:
-            type: request
-            name: myAuthorizer
-            identitySource: method.request.header.Authorization
-            resultTtlInSeconds: 3600
-  myAuthorizer:
-    handler: src/functions/auth/jwtAuthorizer.default
-
-
 
 resources: 
   Resources:
@@ -116,8 +105,8 @@ resources:
             Projection:
               ProjectionType: ALL
 
-# Reference on GlobalSecondaryIndexes:
-# https://stackoverflow.com/questions/57322645/how-to-define-dynamodb-table-with-global-secondary-index-in-serverless-framework
+# # Reference on GlobalSecondaryIndexes:
+# # https://stackoverflow.com/questions/57322645/how-to-define-dynamodb-table-with-global-secondary-index-in-serverless-framework
 
-# Reference for secondary index IAM permissions
-# https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/iam-policy-specific-table-indexes.html
+# # Reference for secondary index IAM permissions
+# # https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/iam-policy-specific-table-indexes.html
