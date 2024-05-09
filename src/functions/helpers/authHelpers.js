@@ -1,5 +1,6 @@
-import AWS from 'aws-sdk';
-import bcrypt from 'bcryptjs';
+import AWS from "aws-sdk";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;

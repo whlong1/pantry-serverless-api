@@ -1,8 +1,10 @@
 import AWS from "aws-sdk";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
-import { hashPassword, createJWT, findUserByEmail } from "../helpers/authHelpers";
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
+const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 // MERN Stack original:
 // https://github.com/whlong1/hoot-api/blob/main/controllers/auth.js
@@ -52,6 +54,38 @@ const register = async (event) => {
       body: JSON.stringify({ message: "Problem with registration." })
     };
   }
+};
+
+// === Helpers ===
+
+const createJWT = (userData) => {
+  return jwt.sign(userData, JWT_SECRET_KEY, { expiresIn: '24h' });
+};
+
+const findUserByEmail = async (email) => {
+  try {
+    const result = await dynamodb.query({
+      TableName: "UserTable",
+      IndexName: "EmailIndex",
+      KeyConditionExpression: "email = :email",
+      ExpressionAttributeValues: { ":email": email }
+    }).promise();
+
+    if (result.Items.length > 0) {
+      return result.Items[0];
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    throw new Error("Failed to retrieve user data");
+  }
+};
+
+// https://www.npmjs.com/package/bcryptjs
+const hashPassword = async (password) => {
+  const salt = await bcrypt.genSalt(10);
+  return bcrypt.hash(password, salt);
 };
 
 export default register;

@@ -18,7 +18,10 @@ provider:
         - dynamodb:PutItem
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
-      Resource: ${param:TODO_TABLE_ARN}
+      Resource: 
+        - ${param:TODO_TABLE_ARN}
+        - ${param:USER_TABLE_ARN}
+        - ${param:USER_TABLE_ARN}/index/*
 
 functions:
   register:
@@ -101,3 +104,6 @@ resources:
 
 # Reference on GlobalSecondaryIndexes:
 # https://stackoverflow.com/questions/57322645/how-to-define-dynamodb-table-with-global-secondary-index-in-serverless-framework
+
+# Reference for secondary index IAM permissions
+# https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/iam-policy-specific-table-indexes.html
