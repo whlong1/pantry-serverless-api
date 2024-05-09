@@ -22,16 +22,22 @@ provider:
         - ${param:TODO_TABLE_ARN}
         - ${param:USER_TABLE_ARN}
         - ${param:USER_TABLE_ARN}/index/*
+  httpApi:
+    authorizers:
+      myAuthorizer:
+        type: request
+        functionName: myAuthorizer
+        enableSimpleResponses: true
 
 functions:
   register:
-    handler: src/functions/users/register.default
+    handler: src/functions/auth/register.default
     events:
       - httpApi:
           path: /register
           method: post
   login:
-    handler: src/functions/users/login.default
+    handler: src/functions/auth/login.default
     events:
       - httpApi:
           path: /login
@@ -66,6 +72,15 @@ functions:
       - httpApi:
           path: /todos/{id}
           method: delete
+          authorizer:
+            type: request
+            name: myAuthorizer
+            identitySource: method.request.header.Authorization
+            resultTtlInSeconds: 3600
+  myAuthorizer:
+    handler: src/functions/auth/jwtAuthorizer.default
+
+
 
 resources: 
   Resources:
@@ -100,7 +115,6 @@ resources:
                 KeyType: HASH
             Projection:
               ProjectionType: ALL
-
 
 # Reference on GlobalSecondaryIndexes:
 # https://stackoverflow.com/questions/57322645/how-to-define-dynamodb-table-with-global-secondary-index-in-serverless-framework
