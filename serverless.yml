@@ -9,6 +9,7 @@ provider:
   region: us-east-1
   environment:
     JWT_SECRET_KEY: ${param:JWT_SECRET_KEY}
+    OPENAI_API_KEY: ${param:OPENAI_API_KEY}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -20,6 +21,7 @@ provider:
         - dynamodb:DeleteItem
       Resource: 
         - ${param:TODO_TABLE_ARN}
+        - ${param:FOOD_TABLE_ARN}
         - ${param:USER_TABLE_ARN}
         - ${param:USER_TABLE_ARN}/index/*
 
@@ -120,6 +122,21 @@ functions:
             allowCredentials: false
           authorizer:
             name: jwtAuthorizer
+  createFoodItem:
+    handler: src/functions/openai/createFoodItem.default
+    timeout: 30
+    events:
+      - http:
+          path: /food
+          method: post
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: false
+          authorizer:
+            name: jwtAuthorizer
 
 resources: 
   Resources:
@@ -127,6 +144,17 @@ resources:
       Type: AWS::DynamoDB::Table
       Properties:
         TableName: TodoTable
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+    FoodTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: FoodTable
         BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - AttributeName: id
