@@ -15,10 +15,12 @@ const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 const generateAuthResponse = (principalId, effect, methodArn) => {
   const policyDocument = generatePolicyDocument(effect, methodArn);
-  console.log("Policy being returned:", JSON.stringify(policyDocument));
   return {
     principalId,
-    policyDocument
+    policyDocument,
+    context: {
+      userId: principalId
+    }
   };
 };
 
