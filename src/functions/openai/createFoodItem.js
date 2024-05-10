@@ -126,11 +126,6 @@ const createFoodItem = async (event) => {
     const newFoodItem = JSON.parse(testContent);
     newFoodItem.id = id;
     newFoodItem.createdAt = createdAt;
-    // look at shelfLife and compare to createdAt
-    // mark it with an expirationDate
-    // query by soon to expire
-    // what to do with user id?
-    // photo submit
 
     await dynamodb
       .put({
