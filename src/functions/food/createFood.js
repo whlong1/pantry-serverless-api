@@ -1,6 +1,5 @@
-import AWS from "aws-sdk";
 import OpenAI from "openai";
-import { v4 } from "uuid";
+import dynamodb from "../../db/dynamodbClient.js";
 import imageAnalysisPrompt from "./prompts/imageAnalysisPrompt.js";
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -19,23 +18,13 @@ const createFood = async (event) => {
     // Generate food analysis JSON:
     const analysisContent = await analyzeImage(imageUrl);
 
-    // Handle resource created using JSON:
-    const dynamodb = new AWS.DynamoDB.DocumentClient();
-    const id = v4();
-    const createdAt = new Date().toISOString();
-    const userId = event.requestContext.authorizer.userId;
-
-    const newFoodItem = JSON.parse(analysisContent);
-    newFoodItem.id = id;
-    newFoodItem.userId = userId;
-    newFoodItem.createdAt = createdAt;
-
-    await dynamodb
-      .put({
-        TableName: "FoodTable",
-        Item: newFoodItem,
-      })
-      .promise();
+    // Parse JSON:
+    const foodData = JSON.parse(analysisContent);
+    // Add userId for lookups:
+    foodData.userId = event.requestContext.authorizer.userId;
+    // Add to database:
+    const newFoodItem = await dynamodb.create("FoodTable", foodData)
+    // Custom .create() method returns { id, createdAt, ...data }
 
     return {
       statusCode: 201,

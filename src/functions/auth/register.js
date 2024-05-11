@@ -1,12 +1,9 @@
 // MERN Stack original:
 // https://github.com/whlong1/hoot-api/blob/main/controllers/auth.js
-
-import AWS from "aws-sdk";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { v4 as uuidv4 } from "uuid";
+import dynamodb from "../../db/dynamodbClient.js";
 
-const dynamodb = new AWS.DynamoDB.DocumentClient();
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 const headers = {
@@ -16,10 +13,7 @@ const headers = {
 
 const register = async (event) => {
   try {
-    const id = uuidv4();
-    const createdAt = new Date().toISOString();
     const { email, password } = JSON.parse(event.body);
-    const hashedPassword = await hashPassword(password);
 
     // Check for existing account with provided email
     const existingUser = await findUserByEmail(email);
@@ -27,19 +21,13 @@ const register = async (event) => {
       return {
         statusCode: 409,
         headers: headers,
-        body: JSON.stringify({ message: "Account already exists!" })
+        body: JSON.stringify({ message: "Account already exists!" }),
       };
     }
 
-    const newUser = {
-      id,
-      email,
-      password: hashedPassword,
-      createdAt,
-    };
-
-    await dynamodb.put({ TableName: "UserTable", Item: newUser }).promise();
-
+    const hashedPassword = await hashPassword(password);
+    const newUser = { email, password: hashedPassword };
+    const { id } = await dynamodb.create("UserTable", newUser);
     const token = createJWT({ id, email });
 
     return {
@@ -51,13 +39,12 @@ const register = async (event) => {
         token: token,
       }),
     };
-
   } catch (error) {
     console.error("Registration error:", error);
     return {
       statusCode: 500,
       headers: headers,
-      body: JSON.stringify({ message: "Problem with registration." })
+      body: JSON.stringify({ message: "Problem with registration." }),
     };
   }
 };
@@ -65,20 +52,16 @@ const register = async (event) => {
 // === Helpers ===
 
 const createJWT = (userData) => {
-  return jwt.sign(userData, JWT_SECRET_KEY, { expiresIn: '24h' });
+  return jwt.sign(userData, JWT_SECRET_KEY, { expiresIn: "24h" });
 };
 
 const findUserByEmail = async (email) => {
   try {
-    const result = await dynamodb.query({
-      TableName: "UserTable",
-      IndexName: "EmailIndex",
-      KeyConditionExpression: "email = :email",
-      ExpressionAttributeValues: { ":email": email }
-    }).promise();
-
-    if (result.Items.length > 0) {
-      return result.Items[0];
+    const queryKey = "email";
+    const queryValue = email;
+    const res = await dynamodb.queryByGSI("UserTable", "EmailIndex", queryKey, queryValue)
+    if (res.Items.length > 0) {
+      return res.Items[0];
     } else {
       return null;
     }

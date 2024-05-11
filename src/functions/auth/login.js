@@ -1,8 +1,7 @@
-import AWS from "aws-sdk";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import dynamodb from "../../db/dynamodbClient.js";
 
-const dynamodb = new AWS.DynamoDB.DocumentClient();
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 const headers = {
@@ -67,15 +66,11 @@ const createJWT = (userData) => {
 
 const findUserByEmail = async (email) => {
   try {
-    const result = await dynamodb.query({
-      TableName: "UserTable",
-      IndexName: "EmailIndex",
-      KeyConditionExpression: "email = :email",
-      ExpressionAttributeValues: { ":email": email }
-    }).promise();
-
-    if (result.Items.length > 0) {
-      return result.Items[0];
+    const queryKey = "email";
+    const queryValue = email;
+    const res = await dynamodb.queryByGSI("UserTable", "EmailIndex", queryKey, queryValue)
+    if (res.Items.length > 0) {
+      return res.Items[0];
     } else {
       return null;
     }
