@@ -10,6 +10,9 @@
 // HTTP API Custom Authorizer Issue:
 // https://github.com/dherault/serverless-offline/issues/1624
 
+// Authorizer Output Documentation:
+// https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-lambda-authorizer-output.html
+
 import jwt from "jsonwebtoken";
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
