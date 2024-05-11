@@ -61,6 +61,7 @@ interface Food {
   isGlutenFree: boolean;
   isVegan: boolean;
   isPreparationRequired: boolean;
+  isIngredient: boolean;
   brand: string | 'Not Available';
   packagingType: 'Plastic' | 'Glass' | 'Paper' | 'Metal' | 'None';
   cuisineType: 'Italian' | 'Mexican' | 'Chinese' | 'Indian' | 'American' | 'Other';
