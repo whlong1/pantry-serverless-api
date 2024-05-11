@@ -10,6 +10,9 @@ provider:
   environment:
     JWT_SECRET_KEY: ${param:JWT_SECRET_KEY}
     OPENAI_API_KEY: ${param:OPENAI_API_KEY}
+    BUCKET_NAME: ${param:BUCKET_NAME}
+    S3_ACCESS_KEY: ${param:S3_ACCESS_KEY}
+    S3_SECRET_ACCESS_KEY: ${param:S3_SECRET_ACCESS_KEY}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -19,11 +22,15 @@ provider:
         - dynamodb:PutItem
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
+        - "s3:PutObject"
+        - "s3:GetObject"
+        - "s3:DeleteObject"
       Resource: 
         - ${param:TODO_TABLE_ARN}
         - ${param:FOOD_TABLE_ARN}
         - ${param:USER_TABLE_ARN}
         - ${param:USER_TABLE_ARN}/index/*
+        - ${param:PHOTO_BUCKET_ARN}
 
 functions:
   jwtAuthorizer:
@@ -122,12 +129,26 @@ functions:
             allowCredentials: false
           authorizer:
             name: jwtAuthorizer
-  createFoodItem:
-    handler: src/functions/openai/createFoodItem.default
+  createFood:
+    handler: src/functions/food/createFood.default
     timeout: 30
     events:
       - http:
           path: /food
+          method: post
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: false
+          authorizer:
+            name: jwtAuthorizer
+  generatePresignedPutURL:
+    handler: src/functions/photos/generatePresignedPutURL.default
+    events:
+      - http:
+          path: /photos
           method: post
           cors:
             origin: '*'
@@ -182,6 +203,10 @@ resources:
                 KeyType: HASH
             Projection:
               ProjectionType: ALL
+
+plugins:
+  - serverless-offline
+
 
 # # Reference on GlobalSecondaryIndexes:
 # # https://stackoverflow.com/questions/57322645/how-to-define-dynamodb-table-with-global-secondary-index-in-serverless-framework
