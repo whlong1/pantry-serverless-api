@@ -130,6 +130,20 @@ functions:
             allowCredentials: false
           authorizer:
             name: jwtAuthorizer
+  deleteS3Object:
+    handler: src/functions/photos/deleteS3Object.default
+    events:
+      - http:
+          path: /photos/{photoId}
+          method: delete
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: false
+          authorizer:
+            name: jwtAuthorizer
 resources: 
   Resources:
     FoodTable:
