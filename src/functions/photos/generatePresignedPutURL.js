@@ -1,15 +1,7 @@
-import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { v4 as uuidv4 } from "uuid";
-
-// Initialize S3Client instance:
-const client = new S3Client({
-  region: "us-east-1",
-  credentials: {
-    accessKeyId: process.env.S3_ACCESS_KEY,
-    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
-  },
-});
+import s3Client from "../../aws/s3Client.js";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 
 const generatePresignedPutURL = async (event) => {
   try {
@@ -33,12 +25,12 @@ const generatePresignedPutURL = async (event) => {
     });
 
     // Generate pre-signed URL for PUT request:
-    const putUrl = await getSignedUrl(client, putCommand, {
+    const putUrl = await getSignedUrl(s3Client, putCommand, {
       expiresIn: 600,
     });
 
     // Generate pre-signed URL for GET request
-    const getUrl = await getSignedUrl(client, getCommand, { expiresIn: 600 });
+    const getUrl = await getSignedUrl(s3Client, getCommand, { expiresIn: 600 });
 
     return {
       statusCode: 201,
@@ -47,20 +39,20 @@ const generatePresignedPutURL = async (event) => {
         "Access-Control-Allow-Origin": "*",
       },
       body: JSON.stringify({
-        photoId: photoId,
+        photoId,
         putUrl,
         getUrl,
       }),
     };
   } catch (error) {
-    console.log("Error generating url:", error);
+    console.log("Error generating URL:", error);
     return {
       statusCode: 500,
       headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
       },
-      body: JSON.stringify({ message: "Something went wrong" }),
+      body: JSON.stringify({ message: "Error generating URL" }),
     };
   }
 };
