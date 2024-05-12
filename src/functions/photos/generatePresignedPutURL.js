@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import s3Client from "../../aws/s3Client.js";
+import s3Client from '../../aws/s3Client.js'
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 

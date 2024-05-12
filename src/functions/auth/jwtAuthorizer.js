@@ -1,8 +1,8 @@
+// HTTP SERVERLESS SOURCE:
+// https://dev.to/tmaximini/jwt-authorization-for-serverless-apis-on-aws-lambda-31h9
+
 // Express API Original
 // https://github.com/whlong1/hoot-api/blob/main/middleware/auth.js
-
-// Serverless guide:
-// https://dev.to/tmaximini/jwt-authorization-for-serverless-apis-on-aws-lambda-31h9
 
 // Serverless docs:
 // https://www.serverless.com/framework/docs/providers/aws/events/apigateway#http-endpoints-with-custom-authorizers
@@ -36,7 +36,9 @@ const generatePolicyDocument = (effect, methodArn) => {
       {
         Action: "execute-api:Invoke",
         Effect: effect,
-        Resource: methodArn
+        Resource: "*"
+        // Specifying methodArn causing occasional 403 status on deploy:
+        // Resource: methodArn 
       }
     ]
   };
@@ -49,6 +51,7 @@ const verifyToken = (event, context, callback) => {
   if (!token || !methodArn) return callback(null, "Unauthorized");
   const decoded = jwt.verify(token, JWT_SECRET_KEY);
   if (decoded && decoded.id) {
+    console.log("Allowed:", methodArn)
     return callback(null, generateAuthResponse(decoded.id, "Allow", methodArn));
 
   } else {

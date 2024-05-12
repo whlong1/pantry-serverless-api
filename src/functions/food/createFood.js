@@ -17,7 +17,7 @@ const createFood = async (event) => {
 
     // Generate food analysis JSON:
     const analysisContent = await analyzeImage(imageUrl);
-
+    
     // Parse JSON:
     const foodData = JSON.parse(analysisContent);
     // Add userId for lookups:
@@ -35,7 +35,10 @@ const createFood = async (event) => {
     console.error("Error:", error.message);
     return {
       statusCode: 500,
-      headers: headers,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
       body: JSON.stringify({ message: error.message }),
     };
   }

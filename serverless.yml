@@ -31,6 +31,7 @@ provider:
         - ${param:USER_TABLE_ARN}
         - ${param:USER_TABLE_ARN}/index/*
         - ${param:PHOTO_BUCKET_ARN}
+        - ${param:RECIPE_TABLE_ARN}
 
 functions:
   jwtAuthorizer:
@@ -144,6 +145,22 @@ functions:
             allowCredentials: false
           authorizer:
             name: jwtAuthorizer
+  createRecipe:
+    handler: src/functions/recipes/createRecipe.default
+    timeout: 30
+    events:
+      - http:
+          path: /recipes
+          method: post
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: false
+          authorizer:
+            name: jwtAuthorizer
+            
 resources: 
   Resources:
     FoodTable:
@@ -166,6 +183,17 @@ resources:
                 KeyType: HASH
             Projection:
               ProjectionType: ALL
+    RecipeTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: RecipeTable
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
     UserTable:
       Type: AWS::DynamoDB::Table
       Properties:
