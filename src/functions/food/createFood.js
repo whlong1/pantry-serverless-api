@@ -14,16 +14,19 @@ const createFood = async (event) => {
   try {
     const { imageUrl } = JSON.parse(event.body);
     if (!imageUrl) throw new Error("Please provide a valid image URL.");
+    console.log("Image URL", imageUrl)
 
     // Generate food analysis JSON:
     const analysisContent = await analyzeImage(imageUrl);
-    
+    console.log("OpenAI Analysis:", analysisContent);
+
     // Parse JSON:
     const foodData = JSON.parse(analysisContent);
     // Add userId for lookups:
     foodData.userId = event.requestContext.authorizer.userId;
     // Add to database:
-    const newFoodItem = await dynamodb.create("FoodTable", foodData)
+    const newFoodItem = await dynamodb.create("FoodTable", foodData);
+    console.log("New Food Item:", newFoodItem);
     // Custom .create() method returns { id, createdAt, ...data }
 
     return {

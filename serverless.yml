@@ -147,7 +147,7 @@ functions:
             name: jwtAuthorizer
   createRecipe:
     handler: src/functions/recipes/createRecipe.default
-    timeout: 30
+    timeout: 300
     events:
       - http:
           path: /recipes
