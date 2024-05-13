@@ -13,6 +13,9 @@
 // Authorizer Output Documentation:
 // https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-lambda-authorizer-output.html
 
+// Helpful breakdown on the use of policies here:
+// https://www.youtube.com/watch?v=2W-dd-3m5u8&ab_channel=CompleteCoding-MasterAWSServerless
+
 import jwt from "jsonwebtoken";
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
