@@ -216,7 +216,6 @@ resources:
               ProjectionType: ALL
 plugins:
   - serverless-offline
-
 # Reference on GlobalSecondaryIndexes:
 # https://stackoverflow.com/questions/57322645/how-to-define-dynamodb-table-with-global-secondary-index-in-serverless-framework
 
